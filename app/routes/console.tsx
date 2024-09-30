@@ -1,4 +1,18 @@
+import { Outlet } from "@remix-run/react";
+
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
 import { LoaderFunctionArgs } from "@remix-run/node";
+import { PiCpuFill } from "react-icons/pi";
+import { BsGpuCard } from "react-icons/bs";
+import { BsCpu } from "react-icons/bs";
 import { BsBox } from "react-icons/bs";
 import {
   GrTemplate,
@@ -8,6 +22,16 @@ import {
   GrAdd,
 } from "react-icons/gr";
 import { json, Link, useNavigate } from "@remix-run/react";
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import {
   Bell,
   CircleUser,
@@ -23,6 +47,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
@@ -38,8 +63,7 @@ import { Input } from "~/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import { authenticator } from "~/services/auth.server";
 
-export const description =
-  "A products dashboard with a sidebar navigation and a main content area...";
+export const description = "";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await authenticator.isAuthenticated(request, {
@@ -71,7 +95,7 @@ function SidebarLink({
   return (
     <Link
       to={to}
-      className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:bg-muted hover:text-primary"
+      className="flex items-center gap-3 rounded-lg px-3 py-4 text-muted-foreground transition-all hover:bg-muted hover:text-primary"
     >
       {icon}
       {children}
@@ -81,6 +105,26 @@ function SidebarLink({
         </Badge>
       )}
     </Link>
+  );
+}
+
+export function BreadcrumbComponent() {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/console">Console</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/console/pods">Pods</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/console/deploy">Deploy</BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }
 
@@ -142,12 +186,7 @@ function Navbar() {
       <div className="w-full flex-1">
         <form>
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search products..."
-              className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
-            />
+            <BreadcrumbComponent />
           </div>
         </form>
       </div>
@@ -173,7 +212,101 @@ function Navbar() {
   );
 }
 
-export default function DashboardComponent() {
+function SelectCPUOrGPu() {
+  return (
+    <Select defaultValue="gpu">
+      <SelectTrigger className="w-[100px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectItem value="gpu">
+            <div className="flex items-center gap-2">
+              <BsGpuCard />
+              GPU
+            </div>
+          </SelectItem>
+          <SelectItem value="cpu">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <BsCpu />
+              CPU
+            </div>
+          </SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function SelectNetworkVolumn() {
+  return (
+    <Select>
+      <SelectTrigger className="w-[200px]">
+        <SelectValue placeholder={`Select Network Volume`} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectItem value="baidu-bj">
+            <div className="flex items-center gap-2">Baidu Beijing</div>
+          </SelectItem>
+          <SelectItem value="Volcengine-bj">
+            <div className="flex items-center gap-2">Volcengine Beijing</div>
+          </SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+interface InstanceCardPros {
+  gpuType: string;
+  gpuCount: number;
+  gpuMem: number;
+  maxGpu: number;
+  cpuMem: number;
+  cpuCount: number;
+  availabeInstances: number;
+}
+
+function InstanceCard(cardProps: InstanceCardPros) {
+  return (
+    <Card
+      key={cardProps.gpuType}
+      className="w-[350px] hover:bg-muted hover:cursor-pointer duration-200"
+    >
+      <CardHeader>
+        <CardTitle className="text-left">
+          <div className="flex justify-between text-sm">
+            <span className="text-left">{cardProps.gpuType}</span>
+            <span className="text-right text-green-600 text-xs">
+              {cardProps.availabeInstances} {`Available`}{" "}
+            </span>
+          </div>
+        </CardTitle>
+        <CardDescription>
+          <div className="flex justify-between text-sm">
+            <span className="text-left">
+              {cardProps.gpuMem} {`GB VRAM`}{" "}
+            </span>
+          </div>
+        </CardDescription>
+      </CardHeader>
+
+      <CardFooter>
+        <div className="flex text-xs w-full justify-between text-muted-foreground">
+          <span className="text-left">
+            {cardProps.cpuMem} {`GB RAM`}{" "}
+          </span>
+          <span className="text-right ">
+            {cardProps.cpuCount} {`x CPU`}{" "}
+          </span>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
+
+export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
@@ -213,29 +346,17 @@ export default function DashboardComponent() {
       <div className="flex flex-col">
         <Navbar />
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold md:text-2xl">Pods</h1>
-            <Button variant="outline" className="gap-2">
-              <GrAdd /> Deploy
-            </Button>
-          </div>
-          <div
-            className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm"
-            x-chunk="dashboard-02-chunk-1"
-          >
-            <div className="flex flex-col">
-              <div className="flex flex-col items-center gap-1 text-center">
-                <h3 className="text-2xl font-bold tracking-tight">
-                  You don't have any Pods yet.
-                </h3>
-                <Button variant="outline" className="mt-4">
-                  Deploy a Pod
-                </Button>
-              </div>
-            </div>
-          </div>
+          {children}
         </main>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
   );
 }

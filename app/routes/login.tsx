@@ -14,7 +14,7 @@ export async function action({ request }: ActionFunctionArgs) {
   // request object, optionally we pass an object with the URLs we want the user
   // to be redirected to after a success or a failure
   return await authenticator.authenticate("user-pass", request, {
-    successRedirect: "/dashboard",
+    successRedirect: "/console",
     failureRedirect: "/login",
   });
 }
@@ -25,14 +25,14 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader({ request }: LoaderFunctionArgs) {
   // If the user is already authenticated redirect to /dashboard directly
   return await authenticator.isAuthenticated(request, {
-    successRedirect: "/dashboard",
+    successRedirect: "/console",
   });
 }
 
 export const description =
   "A login page with two columns. The first column has the login form with email and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image.";
 
-export default function Dashboard() {
+export default function Login() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 

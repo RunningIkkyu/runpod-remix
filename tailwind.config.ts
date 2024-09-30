@@ -4,6 +4,20 @@ export default {
   darkMode: ["class"],
   content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
+    width: {
+      "screen-sm": "640px",
+      "screen-md": "768px",
+      "screen-lg": "1024px",
+      "screen-xl": "1280px",
+      "screen-2xl": "1536px",
+    },
+    maxWidth: {
+      "screen-sm": "640px",
+      "screen-md": "768px",
+      "screen-lg": "1024px",
+      "screen-xl": "1280px",
+      "screen-2xl": "1536px",
+    },
     extend: {
       fontFamily: {
         sans: [
