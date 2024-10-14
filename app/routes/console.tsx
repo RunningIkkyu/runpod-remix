@@ -1,4 +1,5 @@
 import { Outlet } from "@remix-run/react";
+import { useMatches } from "@remix-run/react";
 
 import {
   Breadcrumb,
@@ -108,7 +109,7 @@ function SidebarLink({
   );
 }
 
-export function BreadcrumbComponent() {
+export function BreadcrumbComponent2() {
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -123,6 +124,37 @@ export function BreadcrumbComponent() {
         <BreadcrumbItem>
           <BreadcrumbLink href="/console/deploy">Deploy</BreadcrumbLink>
         </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+export function BreadcrumbComponent() {
+  const matches = useMatches();
+
+  // Dynamically generate breadcrumbs based on route matches
+  const breadcrumbs = matches
+    .filter((match) => match.handle && match.handle.breadcrumb) // Ensure the route has breadcrumb defined
+    .map((match) => ({
+      name: match.handle.breadcrumb,
+      href: match.pathname,
+    }));
+
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/console">Console</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        {breadcrumbs.map((breadcrumb, index) => (
+          <BreadcrumbItem key={breadcrumb.href}>
+            <BreadcrumbLink href={breadcrumb.href}>
+              {breadcrumb.name}
+            </BreadcrumbLink>
+            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+          </BreadcrumbItem>
+        ))}
       </BreadcrumbList>
     </Breadcrumb>
   );
@@ -145,14 +177,14 @@ function Navbar() {
               <span className="">Utopia</span>
             </SidebarLink>
             <hr className="mt-4" />
-            <SidebarLink to="#" icon={<BsBox />}>
+            <SidebarLink to="pods" icon={<BsBox />}>
               Pods
             </SidebarLink>
             <SidebarSectionTitle label="manage" />
-            <SidebarLink to="#" icon={<BsBox />}>
+            <SidebarLink to="/pods" icon={<BsBox />}>
               Pods
             </SidebarLink>
-            <SidebarLink to="#" icon={<GrTemplate />}>
+            <SidebarLink to="/console/template" icon={<GrTemplate />}>
               Templates
             </SidebarLink>
             <SidebarLink to="#" icon={<GrStorage />}>
@@ -323,14 +355,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              <SidebarLink to="#" icon={<GrHome />}>
+              <SidebarLink to="/console" icon={<GrHome />}>
                 Home
               </SidebarLink>
               <SidebarSectionTitle label="manage" />
-              <SidebarLink to="#" icon={<BsBox />}>
+              <SidebarLink to="/console/pods" icon={<BsBox />}>
                 Pods
               </SidebarLink>
-              <SidebarLink to="#" icon={<GrTemplate />}>
+              <SidebarLink to="/console/template" icon={<GrTemplate />}>
                 Templates
               </SidebarLink>
               <SidebarLink to="#" icon={<GrStorage />}>

@@ -5,6 +5,11 @@ export default {
   content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
     width: {
+      xs: "20rem", // 320px
+      sm: "24rem", // 384px
+      md: "28rem", // 448px
+      lg: "32rem", // 512px
+      xl: "36rem", // 576px
       "screen-sm": "640px",
       "screen-md": "768px",
       "screen-lg": "1024px",

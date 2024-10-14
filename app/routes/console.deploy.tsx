@@ -1,8 +1,6 @@
 import { BsGpuCard } from "react-icons/bs";
-import { Slider } from "~/components/ui/slider";
 import { PiHardDrivesFill } from "react-icons/pi";
 import { BsCpu } from "react-icons/bs";
-import { GrAdd } from "react-icons/gr";
 
 import {
   Select,
@@ -13,7 +11,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
-import { Button } from "~/components/ui/button";
 import {
   Card,
   CardDescription,
@@ -21,8 +18,12 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import DeployPodDialog from "~/components/console/template/deploy-pod-dailog";
 
 export const description = "";
+export const handle = {
+  breadcrumb: "Deploy",
+};
 
 function SelectCPUOrGPu() {
   return (
@@ -135,24 +136,20 @@ export default function Pod() {
               <SelectCPUOrGPu />
               <SelectNetworkVolumn />
             </div>
-
-            {/*Second line Choose Gpu memory*/}
-            <div className="">
-              <Slider defaultValue={[33]} max={100} step={1} />
-            </div>
-
             {/* Instance Area*/}
-            <div className="grid grid-cols-3 gap-4">
-              <InstanceCard
-                gpuType="NVIDIA GeForce RTX 4090"
-                maxGpu={8}
-                gpuCount={1}
-                gpuMem={16}
-                cpuCount={2}
-                cpuMem={8}
-                availabeInstances={17}
-              />
-            </div>
+            <DeployPodDialog>
+              <div className="grid grid-cols-3 gap-4">
+                <InstanceCard
+                  gpuType="NVIDIA GeForce RTX 4090"
+                  maxGpu={8}
+                  gpuCount={1}
+                  gpuMem={16}
+                  cpuCount={2}
+                  cpuMem={8}
+                  availabeInstances={17}
+                />
+              </div>
+            </DeployPodDialog>
           </div>
         </div>
       </div>
