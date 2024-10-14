@@ -1,155 +1,138 @@
-import { BsGpuCard } from "react-icons/bs";
-import { PiHardDrivesFill } from "react-icons/pi";
-import { BsCpu } from "react-icons/bs";
-
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-
+import { json } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import {
   Card,
+  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
 import DeployPodDialog from "~/components/console/template/deploy-pod-dailog";
+import { Instance, listInstances } from "~/lib/api/instance";
+import { useRef, useState, useEffect } from "react";
+
+// Loader to fetch the instances
+export const loader = async ({ request }: { request: Request }) => {
+  try {
+    const instances = await listInstances(request);
+    return json({ instances });
+  } catch (error) {
+    console.error("Error fetching instances:", error);
+    return json({ error: error }, { status: 500 });
+  }
+};
 
 export const description = "";
 export const handle = {
   breadcrumb: "Deploy",
 };
 
-function SelectCPUOrGPu() {
-  return (
-    <Select defaultValue="gpu">
-      <SelectTrigger className="w-[100px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectItem value="gpu">
-            <div className="flex items-center gap-2">
-              <BsGpuCard />
-              GPU
-            </div>
-          </SelectItem>
-          <SelectItem value="cpu">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <BsCpu />
-              CPU
-            </div>
-          </SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
-  );
-}
-
-function SelectNetworkVolumn() {
-  return (
-    <Select>
-      <SelectTrigger className="w-[180px]">
-        <div className="flex flex-inline items-center gap-2">
-          <PiHardDrivesFill />
-          <SelectValue placeholder={`Network Volume`} />
-        </div>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectItem value="any">
-            <div className="flex items-center gap-2">Network Volume</div>
-          </SelectItem>
-          <SelectItem value="baidu-bj">
-            <div className="flex items-center gap-2">Baidu Beijing</div>
-          </SelectItem>
-          <SelectItem value="Volcengine-bj">
-            <div className="flex items-center gap-2">Volcengine Beijing</div>
-          </SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
-  );
-}
-
-interface InstanceCardPros {
+interface InstanceCardProps {
+  hostname: string;
+  status: string;
   gpuType: string;
   gpuCount: number;
-  gpuMem: number;
-  maxGpu: number;
-  cpuMem: number;
-  cpuCount: number;
-  availabeInstances: number;
+  gpuMemory: number;
+  gpuCudaVersion: string;
+  gpuDriverVersion: string;
+  publicIp: string;
 }
 
-function InstanceCard(cardProps: InstanceCardPros) {
+function InstanceCard(cardProps: InstanceCardProps) {
   return (
     <Card
-      key={cardProps.gpuType}
+      key={cardProps.hostname}
       className="w-[350px] hover:bg-muted hover:cursor-pointer duration-200"
     >
       <CardHeader>
         <CardTitle className="text-left">
           <div className="flex justify-between text-sm">
-            <span className="text-left">{cardProps.gpuType}</span>
-            <span className="text-right text-green-600 text-xs">
-              {cardProps.availabeInstances} {`Available`}{" "}
+            <span>
+              {cardProps.gpuCount}
+              {` x `}
+              {cardProps.gpuType}
             </span>
+            <span className="text-green-600 text-xs">{cardProps.status}</span>
           </div>
         </CardTitle>
         <CardDescription>
           <div className="flex justify-between text-sm">
-            <span className="text-left">
-              {cardProps.gpuMem} {`GB VRAM`}{" "}
-            </span>
+            <span>{cardProps.hostname}</span>
+            <span>{`${Math.floor(cardProps.gpuMemory / 1024)} GB VRAM`}</span>
           </div>
         </CardDescription>
       </CardHeader>
 
-      <CardFooter>
-        <div className="flex text-xs w-full justify-between text-muted-foreground">
-          <span className="text-left">
-            {cardProps.cpuMem} {`GB RAM`}{" "}
-          </span>
-          <span className="text-right ">
-            {cardProps.cpuCount} {`x CPU`}{" "}
-          </span>
+      <CardContent>
+        <div className="flex flex-col text-xs w-full text-left text-muted-foreground">
+          <div className="flex text-xs w-full justify-between text-muted-foreground">
+            <span className="flex-1">{`IP: ${cardProps.publicIp}`}</span>
+            <span>{`CUDA: ${cardProps.gpuCudaVersion}`}</span>
+          </div>
         </div>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 }
 
-export default function Pod() {
+export default function PodDeploying() {
+  const { instances } = useLoaderData<{ instances: Instance[] }>();
+
+  const [displayedInstances, setDisplayedInstances] = useState<Instance[]>([]);
+  const previousInstancesRef = useRef<Instance[]>([]);
+
+  // Effect to detect new instances and update displayedInstances accordingly
+  useEffect(() => {
+    const previousInstances = previousInstancesRef.current;
+
+    // Find instances that are new (not in the previousInstances)
+    const newInstances = instances.filter(
+      (instance) =>
+        !previousInstances.some(
+          (prevInstance) => prevInstance.id === instance.id
+        )
+    );
+
+    if (newInstances.length > 0) {
+      setDisplayedInstances((prev) => [...prev, ...newInstances]);
+    }
+
+    // Update the ref with the current instances
+    previousInstancesRef.current = instances;
+  }, [instances]);
+
   return (
     <div>
       <div className="flex flex-col">
         <div className="border rounded-lg lg:w-screen-xl max-w-screen-2xl mx-auto px-4 py-6">
           <div className="flex flex-col gap-8 text-center">
-            {/*First line*/}
-            <div className="flex gap-4">
-              <SelectCPUOrGPu />
-              <SelectNetworkVolumn />
-            </div>
-            {/* Instance Area*/}
-            <DeployPodDialog>
-              <div className="grid grid-cols-3 gap-4">
-                <InstanceCard
-                  gpuType="NVIDIA GeForce RTX 4090"
-                  maxGpu={8}
-                  gpuCount={1}
-                  gpuMem={16}
-                  cpuCount={2}
-                  cpuMem={8}
-                  availabeInstances={17}
-                />
+            {/* Instance Area */}
+            {displayedInstances.length > 0 ? (
+              <DeployPodDialog>
+                <div className="flex flex-wrap gap-4">
+                  {displayedInstances.map((instance) => (
+                    <InstanceCard
+                      key={instance.id}
+                      hostname={instance.hostname}
+                      status={instance.status}
+                      gpuType={instance.gpuType}
+                      gpuCount={instance.gpuCount}
+                      gpuMemory={instance.gpuMemory}
+                      gpuCudaVersion={instance.gpuCudaVersion}
+                      gpuDriverVersion={instance.gpuDriverVersion}
+                      publicIp={instance.publicIp}
+                    />
+                  ))}
+                </div>
+              </DeployPodDialog>
+            ) : (
+              <div className="col-span-3 flex flex-col items-center justify-center">
+                <p className="text-lg font-semibold">No Instances Available</p>
+                <p className="text-muted-foreground">
+                  It looks like there are no instances deployed yet.
+                </p>
               </div>
-            </DeployPodDialog>
+            )}
           </div>
         </div>
       </div>

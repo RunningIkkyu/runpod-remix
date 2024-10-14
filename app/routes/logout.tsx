@@ -1,11 +1,13 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import { LoaderFunction } from "@remix-run/node";
+import { logout } from "~/services/auth.server";
 
-import { authenticator } from "~/services/auth.server";
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  await authenticator.logout(request, { redirectTo: "/login" });
+// Loader function to handle logout
+export const loader: LoaderFunction = async ({ request }) => {
+  // Call the logout function from auth.server.ts
+  return logout(request);
 };
 
-export const loader = async ({ request }: ActionFunctionArgs) => {
-  await authenticator.logout(request, { redirectTo: "/login" });
-};
+// If you want to render something in case the user visits the logout route via a browser
+export default function LogoutPage() {
+  return null; // You don't need to render anything on the logout page
+}

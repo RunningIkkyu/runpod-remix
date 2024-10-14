@@ -3,25 +3,17 @@ import { useMatches } from "@remix-run/react";
 
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { PiCpuFill } from "react-icons/pi";
+import { LoaderFunction, redirect } from "@remix-run/node";
+// import { PiCpuFill } from "react-icons/pi";
 import { BsGpuCard } from "react-icons/bs";
 import { BsCpu } from "react-icons/bs";
 import { BsBox } from "react-icons/bs";
-import {
-  GrTemplate,
-  GrStorage,
-  GrMonitor,
-  GrHome,
-  GrAdd,
-} from "react-icons/gr";
+import { GrTemplate, GrStorage, GrMonitor, GrHome } from "react-icons/gr";
 import { json, Link, useNavigate } from "@remix-run/react";
 
 import {
@@ -29,18 +21,10 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import {
-  Bell,
-  CircleUser,
-  LineChart,
-  Menu,
-  Package2,
-  Search,
-} from "lucide-react";
+import { Bell, CircleUser, LineChart, Menu, Package2 } from "lucide-react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -60,17 +44,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Input } from "~/components/ui/input";
+// import { Input } from "~/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
-import { authenticator } from "~/services/auth.server";
+import { getUserFromSession } from "~/services/auth.server";
 
 export const description = "";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: "/login",
-  });
-  return json(user);
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getUserFromSession(request);
+
+  // If the user is authenticated, redirect to the dashboard
+  if (!user) {
+    return redirect("/login");
+  }
+
+  return json({ user });
 };
 
 function SidebarSectionTitle({ label }: { label: string }) {
