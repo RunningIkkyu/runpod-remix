@@ -1,4 +1,4 @@
-import { json } from "@remix-run/node";
+import { ActionFunction, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   Card,
@@ -8,18 +8,19 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import DeployPodDialog from "~/components/console/template/deploy-pod-dailog";
-import { Instance, listInstances } from "~/lib/api/instance";
 import { useRef, useState, useEffect } from "react";
+import {
+  Instance,
+  listInstances,
+  listTemplates,
+  Template,
+} from "~/services/api.server";
 
 // Loader to fetch the instances
 export const loader = async ({ request }: { request: Request }) => {
-  try {
-    const instances = await listInstances(request);
-    return json({ instances });
-  } catch (error) {
-    console.error("Error fetching instances:", error);
-    return json({ error: error }, { status: 500 });
-  }
+  const instances = await listInstances(request);
+  const templates = await listTemplates(request);
+  return json({ instances, templates });
 };
 
 export const description = "";
@@ -47,12 +48,17 @@ function InstanceCard(cardProps: InstanceCardProps) {
       <CardHeader>
         <CardTitle className="text-left">
           <div className="flex justify-between text-sm">
-            <span>
+            <span>{cardProps.gpuType || "No GPU"}</span>
+            <span
+              className={
+                cardProps.gpuCount === 0
+                  ? "text-red-600 text-xs"
+                  : "text-green-600 text-xs"
+              }
+            >
+              {`CARDS: `}
               {cardProps.gpuCount}
-              {` x `}
-              {cardProps.gpuType}
             </span>
-            <span className="text-green-600 text-xs">{cardProps.status}</span>
           </div>
         </CardTitle>
         <CardDescription>
@@ -76,7 +82,10 @@ function InstanceCard(cardProps: InstanceCardProps) {
 }
 
 export default function PodDeploying() {
-  const { instances } = useLoaderData<{ instances: Instance[] }>();
+  const { instances, templates } = useLoaderData<{
+    instances: Instance[];
+    templates: Template[];
+  }>();
 
   const [displayedInstances, setDisplayedInstances] = useState<Instance[]>([]);
   const previousInstancesRef = useRef<Instance[]>([]);
@@ -108,23 +117,26 @@ export default function PodDeploying() {
           <div className="flex flex-col gap-8 text-center">
             {/* Instance Area */}
             {displayedInstances.length > 0 ? (
-              <DeployPodDialog>
-                <div className="flex flex-wrap gap-4">
-                  {displayedInstances.map((instance) => (
+              <div className="flex flex-wrap gap-4">
+                {displayedInstances.map((instance) => (
+                  <DeployPodDialog
+                    templates={templates}
+                    instanceId={instance.id}
+                  >
                     <InstanceCard
                       key={instance.id}
                       hostname={instance.hostname}
                       status={instance.status}
                       gpuType={instance.gpuType}
-                      gpuCount={instance.gpuCount}
+                      gpuCount={instance.gpuCount || 0}
                       gpuMemory={instance.gpuMemory}
                       gpuCudaVersion={instance.gpuCudaVersion}
                       gpuDriverVersion={instance.gpuDriverVersion}
                       publicIp={instance.publicIp}
                     />
-                  ))}
-                </div>
-              </DeployPodDialog>
+                  </DeployPodDialog>
+                ))}
+              </div>
             ) : (
               <div className="col-span-3 flex flex-col items-center justify-center">
                 <p className="text-lg font-semibold">No Instances Available</p>

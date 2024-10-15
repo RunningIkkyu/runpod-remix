@@ -11,11 +11,11 @@ import { ActionFunction } from "@remix-run/node";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const email = formData.get("email") as string;
+  const username = formData.get("username") as string;
   const password = formData.get("password") as string;
 
   // Call the loginAuth function
-  return loginAuth(email, password);
+  return loginAuth(username, password);
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -34,10 +34,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 // export async function loader({ request }: LoaderFunctionArgs) { }
 
 export const description =
-  "A login page with two columns. The first column has the login form with email and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image.";
+  "A login page with two columns. The first column has the login form with username and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image.";
 
 export default function Login() {
-  const emailRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -50,13 +50,13 @@ export default function Login() {
           <hr />
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                ref={emailRef}
-                id="email"
-                name="email"
-                type="email"
-                placeholder="email@example.com"
+                ref={usernameRef}
+                id="username"
+                name="username"
+                type="username"
+                placeholder="username"
                 required
               />
             </div>

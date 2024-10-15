@@ -29,19 +29,20 @@ class ApiAuthError extends Error {
 
 // Base request function to handle API calls with authentication
 export async function sendRequest<T>(
-  request: Request,
+  request: Request | null,
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   const apiUrl = getConfig().backendApiBaseUrl + endpoint;
-  const token = getAccessTokenFromRequest(request);
-
   // Set headers
   const headers = new Headers(options.headers || {});
   headers.set("Content-Type", "application/json");
 
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+  if (request != null) {
+    const token = getAccessTokenFromRequest(request);
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
   }
 
   try {
@@ -83,6 +84,7 @@ export function toCamelCase(obj: any): any {
   } else if (obj !== null && typeof obj === "object") {
     return Object.keys(obj).reduce((result, key) => {
       const camelCaseKey = toCamelCaseString(key);
+      console.log("key, ", key, "camelCaseKey: ", camelCaseKey);
       result[camelCaseKey] = toCamelCase(obj[key]); // Recursively apply toCamelCase
       return result;
     }, {} as any);

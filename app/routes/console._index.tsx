@@ -1,7 +1,3 @@
-export const handle = {
-  breadcrumb: "",
-};
-
 export default function ConsoleApp() {
-  return <div></div>;
+  return <div>Welcome to Utopia</div>;
 }

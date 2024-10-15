@@ -1,5 +1,6 @@
 import { Outlet } from "@remix-run/react";
 import { useMatches } from "@remix-run/react";
+import { IoIosArrowForward } from "react-icons/io";
 
 import {
   Breadcrumb,
@@ -97,53 +98,29 @@ function SidebarLink({
   );
 }
 
-export function BreadcrumbComponent2() {
-  return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/console">Console</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/console/pods">Pods</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/console/deploy">Deploy</BreadcrumbLink>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
-  );
-}
-
 export function BreadcrumbComponent() {
   const matches = useMatches();
-
-  // Dynamically generate breadcrumbs based on route matches
-  const breadcrumbs = matches
-    .filter((match) => match.handle && match.handle.breadcrumb) // Ensure the route has breadcrumb defined
-    .map((match) => ({
-      name: match.handle.breadcrumb,
-      href: match.pathname,
+  const pathname = matches[matches.length - 1].pathname;
+  const breadcrumbs = pathname
+    .split("/") // Split by "/"
+    .filter(Boolean) // Remove empty parts (e.g., for leading/trailing "/")
+    .map((part, index, array) => ({
+      name: part,
+      href: `/${array.slice(0, index + 1).join("/")}`, // Create a full path for the breadcrumb link
     }));
 
   return (
     <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/console">Console</BreadcrumbLink>
+      {breadcrumbs.map((breadcrumb, index) => (
+        <BreadcrumbItem key={breadcrumb.href}>
+          <BreadcrumbLink href={breadcrumb.href}>
+            {breadcrumb.name}
+          </BreadcrumbLink>
+          <div className="pr-2">
+            {index < breadcrumbs.length - 1 ? <IoIosArrowForward /> : <></>}
+          </div>
         </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        {breadcrumbs.map((breadcrumb, index) => (
-          <BreadcrumbItem key={breadcrumb.href}>
-            <BreadcrumbLink href={breadcrumb.href}>
-              {breadcrumb.name}
-            </BreadcrumbLink>
-            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-          </BreadcrumbItem>
-        ))}
-      </BreadcrumbList>
+      ))}
     </Breadcrumb>
   );
 }
@@ -165,16 +142,14 @@ function Navbar() {
               <span className="">Utopia</span>
             </SidebarLink>
             <hr className="mt-4" />
-            <SidebarLink to="pods" icon={<BsBox />}>
-              Pods
-            </SidebarLink>
             <SidebarSectionTitle label="manage" />
-            <SidebarLink to="/pods" icon={<BsBox />}>
+            <SidebarLink to="/console/pod" icon={<BsBox />}>
               Pods
             </SidebarLink>
-            <SidebarLink to="/console/template" icon={<GrTemplate />}>
+            <SidebarLink to="/console/templates" icon={<GrTemplate />}>
               Templates
             </SidebarLink>
+            {/*
             <SidebarLink to="#" icon={<GrStorage />}>
               Storage
             </SidebarLink>
@@ -184,6 +159,7 @@ function Navbar() {
             <SidebarLink to="#" icon={<LineChart className="h-5 w-5" />}>
               Analytics
             </SidebarLink>
+            */}
           </nav>
           <div className="mt-auto">
             <Card>
@@ -350,15 +326,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <SidebarLink to="/console/pods" icon={<BsBox />}>
                 Pods
               </SidebarLink>
-              <SidebarLink to="/console/template" icon={<GrTemplate />}>
+              <SidebarLink to="/console/templates" icon={<GrTemplate />}>
                 Templates
               </SidebarLink>
+              {/*
               <SidebarLink to="#" icon={<GrStorage />}>
                 Storage
               </SidebarLink>
               <SidebarLink to="#" icon={<LineChart className="h-4 w-4" />}>
                 Monitoring
               </SidebarLink>
+               */}
             </nav>
           </div>
         </div>
